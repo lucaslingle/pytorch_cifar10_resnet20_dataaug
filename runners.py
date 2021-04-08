@@ -58,7 +58,7 @@ class Trainer:
                 loss = loss_fn(logits, y)
 
                 # Backprop
-                lr = [lr for (start_step, lr) in self.train_spec.lr_spec if start_step <= self.global_step][0]
+                lr = [lr for (start_step, lr) in self.train_spec.lr_spec if start_step <= self.global_step][-1]
                 optimizer.lr = lr
                 optimizer.zero_grad()
                 loss.backward()
