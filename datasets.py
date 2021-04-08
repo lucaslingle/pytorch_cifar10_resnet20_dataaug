@@ -48,7 +48,7 @@ class CIFAR10HePreprocessing(tc.utils.data.Dataset):
     def __getitem__(self, idx):
         X, y = self.dataset[idx]
         X = np.array(X, dtype=np.float32)
-        npimage = np.round(X - self.per_pixel_means).astype(np.uint8) # cant convert back to PIL Image without this O_o
+        npimage = np.round(X - self.per_pixel_means).astype(np.uint8) # cant convert back to PIL Image without this
         image = PIL.Image.fromarray(npimage)
         label = y
         if self.transform:

@@ -54,6 +54,13 @@ class ResBlock(tc.nn.Module):
         )
         self.identity_shortcut = DownsamplingIdentityShortcut(self.input_channels, self.output_channels)
 
+        for m in self.conv_sequence.modules():
+            if isinstance(m, tc.nn.Conv2d):
+                tc.nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='relu')
+            elif isinstance(m, tc.nn.BatchNorm2d):
+                tc.nn.init.constant_(m.weight, 1.)
+                tc.nn.init.constant_(m.bias, 0.)
+
     def forward(self, x):
         r = self.conv_sequence(x)
         i = self.identity_shortcut(x, r)
@@ -76,6 +83,13 @@ class PreactivationResBlock(tc.nn.Module):
             tc.nn.Conv2d(self.output_channels, self.output_channels, (3,3), stride=(1,1), padding=(1,1))
         )
         self.identity_shortcut = DownsamplingIdentityShortcut(self.input_channels, self.output_channels)
+
+        for m in self.conv_sequence.modules():
+            if isinstance(m, tc.nn.Conv2d):
+                tc.nn.init.kaiming_normal_(m.weight, mode='fan_in', nonlinearity='relu')
+            elif isinstance(m, tc.nn.BatchNorm2d):
+                tc.nn.init.constant_(m.weight, 1.)
+                tc.nn.init.constant_(m.bias, 0.)
 
     def forward(self, x):
         r = self.conv_sequence(x)
@@ -106,8 +120,10 @@ class Cifar10ResNet(tc.nn.Module):
         self.num_repeats = num_repeats
         self.num_stages = num_stages
 
-        self.blocks = tc.nn.ModuleList()
         self.initial_conv = tc.nn.Conv2d(self.img_channels, self.initial_num_filters, (3,3), stride=(2,2), padding=(1,1))
+        tc.nn.init.kaiming_normal_(self.initial_conv.weight, mode='fan_in', nonlinearity='relu')
+
+        self.blocks = tc.nn.ModuleList()
         for s in range(self.num_stages):
             for i in range(self.num_repeats):
                 if s == 0:
@@ -167,8 +183,10 @@ class Cifar10PreactivationResNet(tc.nn.Module):
         self.num_repeats = num_repeats
         self.num_stages = num_stages
 
-        self.blocks = tc.nn.ModuleList()
         self.initial_conv = tc.nn.Conv2d(self.img_channels, self.initial_num_filters, (3,3), stride=(2,2), padding=(1,1))
+        tc.nn.init.kaiming_normal_(self.initial_conv.weight, mode='fan_in', nonlinearity='relu')
+
+        self.blocks = tc.nn.ModuleList()
         for s in range(self.num_stages):
             for i in range(self.num_repeats):
                 if s == 0:

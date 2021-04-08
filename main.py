@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 training_data = CIFAR10HePreprocessing(root="data", train=True)
 test_data = CIFAR10HePreprocessing(root="data", train=False)
 
-batch_size = 64
+batch_size = 128
 
 # Create data loaders.
 train_dataloader = tc.utils.data.DataLoader(training_data, batch_size=batch_size, shuffle=True)
@@ -37,7 +37,7 @@ except Exception:
 
 loss_fn = tc.nn.CrossEntropyLoss()
 
-lr_spec = [(0, 0.10), (32000, 0.01), (48000, 0.001), (64000, 0.0)]
+lr_spec = [(0, 0.01), (400, 0.10), (32000, 0.01), (48000, 0.001), (64000, 0.0)]
 train_spec = TrainSpec(max_iters=64000, early_stopping=False, lr_spec=lr_spec)
 evaluator = Evaluator(model, test_dataloader)
 trainer = Trainer(model, train_dataloader, train_spec, evaluator, verbose=True)
@@ -67,10 +67,3 @@ for X, y in test_dataloader:
     plt.show()
 
     break
-
-# with batch size 128, i am currently getting nan losses immediately on the second epoch.
-# pretty sure its because i am reinitializing the optimizer, and the momentum terms aren't persisted outside of it.
-# gotta figure out a way to persist them, or not reinstantiate the optimizer.
-# tc.optim.lr_scheduler.ExponentialLR looks like a promising solution.
-#
-# should also figure out how to implement he initialization for the layers.

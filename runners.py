@@ -1,5 +1,6 @@
 import torch as tc
 import collections
+import numpy as np
 TrainSpec = collections.namedtuple('TrainSpec', field_names=['max_iters', 'early_stopping', 'lr_spec'])
 
 
@@ -41,14 +42,15 @@ class Trainer:
             raise NotImplementedError
 
         epoch = 1
+        optimizer = tc.optim.SGD(self.model.parameters(), lr=0.01, momentum=0.9, weight_decay=0.0001)
         while self.global_step < max_iters:
-            lr = [lr for (start_step, lr) in self.train_spec.lr_spec if start_step <= self.global_step][0]
-            optimizer = tc.optim.SGD(self.model.parameters(), lr=lr, momentum=0.9)
-
             if self.verbose:
                 print(f"Epoch {epoch}\n-------------------------------")
 
             for (X, y) in self.train_dataloader:
+                if len(X) < self.train_dataloader.batch_size:
+                    continue
+
                 X, y = X.to(device), y.to(device)
 
                 # Forward
@@ -56,6 +58,8 @@ class Trainer:
                 loss = loss_fn(logits, y)
 
                 # Backprop
+                lr = [lr for (start_step, lr) in self.train_spec.lr_spec if start_step <= self.global_step][0]
+                optimizer.lr = lr
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
