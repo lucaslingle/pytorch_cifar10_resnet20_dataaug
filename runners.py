@@ -1,6 +1,5 @@
 import torch as tc
 import collections
-import numpy as np
 TrainSpec = collections.namedtuple('TrainSpec', field_names=['max_iters', 'early_stopping', 'lr_spec'])
 
 
@@ -48,9 +47,6 @@ class Trainer:
                 print(f"Epoch {epoch}\n-------------------------------")
 
             for (X, y) in self.train_dataloader:
-                if len(X) < self.train_dataloader.batch_size:
-                    continue
-
                 X, y = X.to(device), y.to(device)
 
                 # Forward

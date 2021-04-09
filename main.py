@@ -1,7 +1,6 @@
 import torch as tc
-import torchvision as tv
 from datasets import CIFAR10HePreprocessing
-from classifier import Cifar10PreactivationResNet
+from classifier import Cifar10ResNet
 from runners import Evaluator, Trainer, TrainSpec
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,8 +22,7 @@ print("Using {} device".format(device))
 # The model from He et al., 2015 for CIFAR-10 uses
 # initial_num_filters=16, num_repeats=3, num_stages=3,
 # which gives a total of 3*3*2 convolutions in the res blocks, and 20 layers total.
-# Here we use a preactivation version of that model (see He et al., 2016).
-model = Cifar10PreactivationResNet(
+model = Cifar10ResNet(
     img_height=32, img_width=32, img_channels=3,
     initial_num_filters=16, num_repeats=3, num_stages=3, num_classes=10).to(device)
 print(model)
@@ -37,7 +35,7 @@ except Exception:
 
 loss_fn = tc.nn.CrossEntropyLoss()
 
-lr_spec = [(0, 0.01), (400, 0.10), (32000, 0.01), (48000, 0.001), (64000, 0.0)]
+lr_spec = [(0, 0.10), (32000, 0.01), (48000, 0.001), (64000, 0.0)]
 train_spec = TrainSpec(max_iters=64000, early_stopping=False, lr_spec=lr_spec)
 evaluator = Evaluator(model, test_dataloader)
 trainer = Trainer(model, train_dataloader, train_spec, evaluator, verbose=True)
