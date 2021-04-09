@@ -186,7 +186,7 @@ class Cifar10ResNet(tc.nn.Module):
         logits = self.fc(spatial_features_batched)
         argmax_logits = tc.argmax(logits, dim=1)
 
-        spatial_shape = (-1, (self.img_height // (2 ** self.num_stages)), (self.img_width // (2 ** self.num_stages)))
+        spatial_shape = (-1, (self.img_height // (2 ** (self.num_stages-1))), (self.img_width // (2 ** (self.num_stages-1))))
         argmax_logits = tc.reshape(argmax_logits, spatial_shape)
 
         return argmax_logits
@@ -248,7 +248,7 @@ class Cifar10PreactivationResNet(tc.nn.Module):
         logits = self.fc(spatial_features_batched)
         argmax_logits = tc.argmax(logits, dim=1)
 
-        spatial_shape = (-1, (self.img_height // (2 ** self.num_stages)), (self.img_width // (2 ** self.num_stages)))
+        spatial_shape = (-1, (self.img_height // (2 ** (self.num_stages-1))), (self.img_width // (2 ** (self.num_stages-1))))
         argmax_logits = tc.reshape(argmax_logits, spatial_shape)
 
         return argmax_logits
