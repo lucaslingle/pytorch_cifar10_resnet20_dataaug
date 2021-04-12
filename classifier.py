@@ -46,10 +46,10 @@ class ResBlock(tc.nn.Module):
         self.output_channels = output_channels
         s = 2 if downsample else 1
         self.conv_sequence = tc.nn.Sequential(
-            tc.nn.Conv2d(self.input_channels, self.output_channels, (3,3), stride=(s,s), padding=(1,1)),
+            tc.nn.Conv2d(self.input_channels, self.output_channels, (3,3), stride=(s,s), padding=(1,1), bias=False),
             tc.nn.BatchNorm2d(self.output_channels),
             tc.nn.ReLU(),
-            tc.nn.Conv2d(self.output_channels, self.output_channels, (3,3), stride=(1,1), padding=(1,1)),
+            tc.nn.Conv2d(self.output_channels, self.output_channels, (3,3), stride=(1,1), padding=(1,1), bias=False),
             tc.nn.BatchNorm2d(self.output_channels),
         )
         self.identity_shortcut = DownsamplingIdentityShortcut(self.input_channels, self.output_channels)
@@ -77,10 +77,10 @@ class PreactivationResBlock(tc.nn.Module):
         self.conv_sequence = tc.nn.Sequential(
             tc.nn.BatchNorm2d(self.input_channels),
             tc.nn.ReLU(),
-            tc.nn.Conv2d(self.input_channels, self.output_channels, (3,3), stride=(s,s), padding=(1,1)),
+            tc.nn.Conv2d(self.input_channels, self.output_channels, (3,3), stride=(s,s), padding=(1,1), bias=False),
             tc.nn.BatchNorm2d(self.output_channels),
             tc.nn.ReLU(),
-            tc.nn.Conv2d(self.output_channels, self.output_channels, (3,3), stride=(1,1), padding=(1,1))
+            tc.nn.Conv2d(self.output_channels, self.output_channels, (3,3), stride=(1,1), padding=(1,1), bias=False)
         )
         self.identity_shortcut = DownsamplingIdentityShortcut(self.input_channels, self.output_channels)
 
@@ -112,8 +112,8 @@ class InitialResNetConv(tc.nn.Module):
         self.initial_num_filters = initial_num_filters
 
         self.conv_sequence = tc.nn.Sequential(
-            tc.nn.Conv2d(self.img_channels, self.initial_num_filters, (3,3), stride=(1,1), padding=(1,1)),
-            tc.nn.BatchNorm2d(self.initial_num_filters),
+            tc.nn.Conv2d(self.img_channels, self.initial_num_filters, (3,3), stride=(1,1), padding=(1,1), bias=False),
+            tc.nn.BatchNorm2d(self.initial_num_filters, momentum=0.9, track_running_stats=True),
             tc.nn.ReLU()
         )
 
@@ -164,7 +164,8 @@ class Cifar10ResNet(tc.nn.Module):
 
         self.avgpool = GlobalAveragePool2D()
         self.final_num_filters = self.initial_num_filters * (2 ** (self.num_stages-1))
-        self.fc = tc.nn.Linear(self.final_num_filters, self.num_classes)
+        self.fc = tc.nn.Linear(self.final_num_filters, self.num_classes, bias=False)
+        tc.nn.init.kaiming_normal(self.fc.weight)
 
     def forward(self, x):
         x = self.initial_conv(x)
@@ -226,7 +227,8 @@ class Cifar10PreactivationResNet(tc.nn.Module):
 
         self.avgpool = GlobalAveragePool2D()
         self.final_num_filters = self.initial_num_filters * (2 ** (self.num_stages-1))
-        self.fc = tc.nn.Linear(self.final_num_filters, self.num_classes)
+        self.fc = tc.nn.Linear(self.final_num_filters, self.num_classes, bias=False)
+        tc.nn.init.kaiming_normal(self.fc.weight)
 
     def forward(self, x):
         x = self.initial_conv(x)

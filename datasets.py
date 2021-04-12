@@ -10,7 +10,8 @@ class CIFAR10HePreprocessing(tc.utils.data.Dataset):
         self.train = train
         self.dataset = tv.datasets.CIFAR10(
             root=root, train=train, download=True, transform=None, target_transform=None)
-        self.per_pixel_means = self.get_per_pixel_means()
+        #self.per_pixel_means = self.get_per_pixel_means()
+        self.per_channel_means = self.get_per_channel_means()
         self.transform = None
         self.target_transform = None
 
@@ -25,24 +26,48 @@ class CIFAR10HePreprocessing(tc.utils.data.Dataset):
         for i in range(0, len(training_data)):
             X, y = training_data[i]
             X = np.array(X).astype(np.float32)
+            X = X / 255. # convert to [0, 1] range
+            X = 2.0 * X - 1.0 # convert to [-1, 1] range
             per_pixel_means += X
 
         per_pixel_means = per_pixel_means / float(len(training_data))
         return per_pixel_means
+
+    def get_per_channel_means(self):
+        training_data = tv.datasets.CIFAR10(
+            root=self.root, train=True, download=True, transform=None)
+
+        X, y = training_data[0]
+        X = np.array(X)
+        per_channel_means = np.zeros(dtype=np.float32, shape=(1, 1, 3))
+
+        for i in range(0, len(training_data)):
+            X, y = training_data[i]
+            X = np.array(X).astype(np.float32)
+            X = X / 255. # convert to [0, 1] range
+            X = 2.0 * X - 1.0 # convert to [-1, 1] range
+            per_channel_means += np.mean(X, axis=(0,1), keepdims=True) # per-channel mean, in NHWC format.
+
+        per_channel_means = per_channel_means / float(len(training_data))
+        return per_channel_means
 
     def __len__(self):
         return len(self.dataset)
 
     def __getitem__(self, idx):
         X, y = self.dataset[idx]
-        X = np.array(X, dtype=np.float32)
+        X = np.array(X).astype(np.float32)
+        X = X / 255.  # convert to [0, 1] range
+        X = 2.0 * X - 1.0  # convert to [-1, 1] range
 
         ## subtract per-pixel mean following He et al., 2015
-        image = 2.0 * (((X - self.per_pixel_means).astype(np.float32) / 255.) - 0.5) # convert to [-1, 1] range
+        image = X - self.per_channel_means
+        #image = (X - self.per_pixel_means)
+        #image = X
         image = np.transpose(image, [2,0,1]) # NCHW
 
         label = y
-        if self.train:
+        if True:
             ## pad image.
             h, w = image.shape[1:]
             pad_pixels = 4
