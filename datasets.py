@@ -67,7 +67,7 @@ class CIFAR10HePreprocessing(tc.utils.data.Dataset):
         image = np.transpose(image, [2,0,1]) # NCHW
 
         label = y
-        if True:
+        if self.train:
             ## pad image.
             h, w = image.shape[1:]
             pad_pixels = 4

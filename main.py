@@ -36,7 +36,7 @@ loss_fn = tc.nn.CrossEntropyLoss()
 evaluator = Evaluator()
 trainer = Trainer(max_iters=64000, evaluator=evaluator, verbose=True)
 
-trainer.run(model, train_dataloader, test_dataloader, device, loss_fn)
+# trainer.run(model, train_dataloader, test_dataloader, device, loss_fn)
 print("Done!")
 
 tc.save(model.state_dict(), "model.pth")
